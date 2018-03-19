@@ -107,6 +107,8 @@ async function generateTocText(document: vscode.TextDocument): Promise<string> {
     let startDepth = tocConfig.startDepth;
     let order = new Array(tocConfig.endDepth - startDepth + 1).fill(0); // Used for ordered list
 
+    let currentDepth = [];
+    let currentDepthLevel = tocConfig.startDepth;
     tocEntry.forEach(entry => {
         if (entry.level <= tocConfig.endDepth && entry.level >= startDepth) {
             let indentation = entry.level - startDepth;
@@ -114,10 +116,26 @@ async function generateTocText(document: vscode.TextDocument): Promise<string> {
             let entryText = entry.text.replace(/\[([^\]]+?)\]\([^\)]+?\)/g, function (match, g1) {
                 return g1;
             });
+            if (entry.level === tocConfig.startDepth) {
+                currentDepth = [entryText];
+                currentDepthLevel = entry.level;
+            }
+            else if (currentDepthLevel >= entry.level) {
+                while (currentDepthLevel >= entry.level) {
+                    currentDepth.pop();
+                    currentDepthLevel--;
+                }
+                currentDepth.push(entryText);
+                currentDepthLevel++;
+            }
+            else {
+                currentDepth.push(entryText);
+                currentDepthLevel++;
+            }
             let row = [
                 docConfig.tab.repeat(indentation),
                 (tocConfig.orderedList ? ++order[indentation] + '.' : tocConfig.listMarker) + ' ',
-                tocConfig.plaintext ? entryText : `[${entryText}](#${slugify(entryText)})`
+                tocConfig.plaintext ? entryText : `[${entryText}](#${slugify(currentDepth.join(" "))})`
             ];
             toc.push(row.join(''));
             if (tocConfig.orderedList) order.fill(0, indentation + 1);

@@ -25,12 +25,11 @@ export function activate(context: ExtensionContext) {
 // Return Promise because need to chain operations in unit tests
 
 function toggleBold() {
-    return styleByWrapping('**');
+    return styleByWrapping('__');
 }
 
 function toggleItalic() {
-    let indicator = workspace.getConfiguration('markdown.extension.italic').get<string>('indicator');
-    return styleByWrapping(indicator);
+    return styleByWrapping('_');
 }
 
 function toggleCodeSpan() {
