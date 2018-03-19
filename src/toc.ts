@@ -108,7 +108,6 @@ async function generateTocText(document: vscode.TextDocument): Promise<string> {
     let order = new Array(tocConfig.endDepth - startDepth + 1).fill(0); // Used for ordered list
 
     let currentDepth = [];
-    let currentDepthLevel = tocConfig.startDepth;
     tocEntry.forEach(entry => {
         if (entry.level <= tocConfig.endDepth && entry.level >= startDepth) {
             let indentation = entry.level - startDepth;
@@ -118,19 +117,14 @@ async function generateTocText(document: vscode.TextDocument): Promise<string> {
             });
             if (entry.level === tocConfig.startDepth) {
                 currentDepth = [entryText];
-                currentDepthLevel = entry.level;
-            }
-            else if (currentDepthLevel >= entry.level) {
-                while (currentDepthLevel >= entry.level) {
-                    currentDepth.pop();
-                    currentDepthLevel--;
-                }
-                currentDepth.push(entryText);
-                currentDepthLevel++;
             }
             else {
+                if (tocConfig.startDepth + currentDepth.length - 1 >= entry.level) {
+                    while (tocConfig.startDepth + currentDepth.length - 1 >= entry.level) {
+                        currentDepth.pop();
+                    }
+                }
                 currentDepth.push(entryText);
-                currentDepthLevel++;
             }
             let row = [
                 docConfig.tab.repeat(indentation),
